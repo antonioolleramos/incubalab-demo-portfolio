@@ -1,6 +1,6 @@
 {
   "name": "incubalab-portfolio-demo",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Demonstração estática e independente para portfólio: dados fictícios, sem backend ou autenticação real.",
   "scripts": {

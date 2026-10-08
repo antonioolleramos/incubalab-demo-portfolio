@@ -114,3 +114,101 @@ test('não há URLs externas, código de produção ou APIs de rede no código e
   assert.match(html, /href="styles.css"/);
   assert.equal(/https?:\/\//i.test(html), false);
 });
+
+test('os seis módulos adicionais renderizam formulários e listas sem backend',()=>{
+ const x=boot();
+ for(const [view,key,title] of [
+  ['preincubacao','pre','Pré-incubação'],['maturidade','maturity','Maturidade empresarial'],
+  ['editais','notices','Eventos e editais'],['hackathons','hackathons','Hackathons'],
+  ['taxas','fees','Taxas de incubação'],['mai','mai','Programa MAI-DAI']]){
+  run(x,`goto('${view}')`);
+  assert.match(x.app.innerHTML,new RegExp(title));
+  assert.match(x.app.innerHTML,/Novo registro/);
+  assert.equal(run(x,`extended.records.${key}.length`)>0,true);
+ }
+});
+
+test('cadastro, edição e exclusão dos seis novos módulos atualizam o armazenamento local',()=>{
+ for(const key of ['pre','maturity','notices','hackathons','fees','mai']){
+  const x=boot();
+  const sample=run(x,`structuredClone(extended.records.${key}[0])`);
+  const len=run(x,`extended.records.${key}.length`);
+  const {id,...fields}=sample;
+  // FormData do teste retorna os mesmos campos que o formulário geraria.
+  const values=Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,String(v)]));
+  values[Object.keys(values)[0]] = key==='maturity' ? 'Empresa Nova' : 'Registro Novo';
+  run(x,`editingRecordKey='${key}';editingRecordId=null`);
+  x.handlers.submit({target:{id:'record-form',values},preventDefault(){}});
+  assert.equal(run(x,`extended.records.${key}.length`),len+1,key);
+  const newid=run(x,`extended.records.${key}.at(-1).id`);
+  assert.equal(x.store.has('incubalab-public-portfolio-extended-v2'),true);
+  assert.equal(run(x,'extended.activity[0].action'),'Registro incluído');
+  values[Object.keys(values)[0]] = key==='maturity' ? 'Empresa Editada' : 'Registro Editado';
+  run(x,`editingRecordKey='${key}';editingRecordId=${newid}`);
+  x.handlers.submit({target:{id:'record-form',values},preventDefault(){}});
+  assert.equal(run(x,`extended.records.${key}.length`),len+1,key);
+  run(x,`view=${JSON.stringify({pre:'preincubacao',maturity:'maturidade',notices:'editais',hackathons:'hackathons',fees:'taxas',mai:'mai'}[key])}`);
+  x.handlers.click({target:{closest:()=>({dataset:{action:'delete-record',id:String(newid)}})}});
+  assert.equal(run(x,`extended.records.${key}.length`),len,key);
+ }
+});
+
+test('pesquisa e filtros nos novos módulos alteram os registros visíveis',()=>{
+ const x=boot();run(x,'goto("preincubacao")');
+ assert.match(x.app.innerHTML,/Plataforma de educação oceânica/);
+ x.handlers.input({target:{id:'register-search',value:'Sensores urbanos'}});
+ assert.match(x.app.innerHTML,/Sensores urbanos/);
+ assert.doesNotMatch(x.app.innerHTML,/Plataforma de educação oceânica/);
+ x.handlers.change({target:{id:'register-status',value:'Concluído'}});
+ assert.doesNotMatch(x.app.innerHTML,/>Sensores urbanos/);
+});
+
+test('maturidade média e totais de taxas reagem a mudanças de cadastro',()=>{
+ const x=boot();
+ assert.equal(run(x,'avgMaturity(extended.records.maturity[0])'),78);
+ assert.equal(run(x,'extended.records.fees.reduce((n,r)=>n+Number(r.amount),0)'),1450);
+ run(x,'extended.records.maturity[0].market=94');
+ assert.equal(run(x,'avgMaturity(extended.records.maturity[0])'),84);
+});
+
+test('exportação de módulos e histórico gera CSV local',()=>{
+ const x=boot();
+ run(x,'exportRegister("fees")');
+ assert.equal(x.notices.find(i=>typeof i==='object'&&i.download==='fees-demo-ficticia.csv')?.clicked,'a');
+ run(x,'goto("historico")');
+ assert.match(x.app.innerHTML,/Histórico da demonstração/);
+});
+
+test('nomes HTML enviados aos novos cadastros são escapados',()=>{
+ const x=boot();
+ run(x,`editingRecordKey='pre';editingRecordId=null`);
+ const values={project:'<img src=x onerror=alert(1)>',company:'Equipe Teste',area:'Educação',status:'Inscrito',date:'2026-11-11',mentor:'Pessoa fictícia'};
+ x.handlers.submit({target:{id:'record-form',values},preventDefault(){}});
+ run(x,'goto("preincubacao")');
+ assert.match(x.app.innerHTML,/&lt;img/);
+ assert.doesNotMatch(x.app.innerHTML,/<img src=x onerror/);
+});
+
+test('não permite taxa fora da faixa e rejeita opção inválida',()=>{
+ const x=boot();run(x,`editingRecordKey='fees';editingRecordId=null`);
+ const values={company:'Empresa fictícia',competence:'2026-10',amount:'-1',due:'2026-10-11',status:'Pago'};
+ x.handlers.submit({target:{id:'record-form',values},preventDefault(){}});
+ assert.equal(run(x,'extended.records.fees.length'),5);
+ values.amount='100';values.status='ADMIN';
+ x.handlers.submit({target:{id:'record-form',values},preventDefault(){}});
+ assert.equal(run(x,'extended.records.fees.length'),5);
+});
+
+test('restaurar dados restaura também os registros ampliados',()=>{
+ const x=boot();run(x,'extended.records.fees.pop();storeExtended()');
+ assert.equal(run(x,'extended.records.fees.length'),4);
+ x.handlers.click({target:{closest:()=>({dataset:{action:'reset'}})}});
+ assert.equal(run(x,'extended.records.fees.length'),5);
+});
+
+test('eventos existentes podem ser editados sem duplicar',()=>{
+ const x=boot();run(x,'editingEventId=1');
+ x.handlers.submit({target:{id:'event-form',values:{name:'Encontro Editado',date:'2026-10-22',category:'Workshop',audience:'75'}},preventDefault(){}});
+ assert.equal(run(x,'data.events.length'),4);
+ assert.equal(run(x,'data.events[0].name'),'Encontro Editado');
+});

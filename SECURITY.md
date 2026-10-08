@@ -23,10 +23,11 @@ Os recursos mencionados não representam uma avaliação formal de segurança da
 
 `index.html → styles.css + app.js` (compilado de `src/app.ts`).
 
-A amostra é renderizada inteiramente no navegador. Usa `localStorage` para cadastros fictícios; não há chamadas `fetch`, `XMLHttpRequest`, WebSocket nem código no servidor. A página pode ser servida por qualquer host de arquivos estáticos.
+A amostra é renderizada inteiramente no navegador. Usa `localStorage` para cadastros, taxas, avaliações e histórico fictícios; não há chamadas `fetch`, `XMLHttpRequest`, WebSocket nem código no servidor. A página pode ser servida por qualquer host de arquivos estáticos.
 
 ## Limites
 
+- **O histórico da demo não equivale a logs de segurança ou auditoria institucional.** Ele representa somente interações locais do visitante.
 - **Não é um sistema de autenticação.** Não oferece proteção de contas, armazenamento seguro de informações sensíveis ou segregação multiusuário.
 - **Não use dados pessoais ou institucionais reais** no formulário: tudo permanece no navegador atual e poderia ser visto por quem tiver acesso a esse navegador.
 - É uma **demonstração**, não uma substituição do produto em produção. Sua funcionalidade não atesta a segurança do sistema original.

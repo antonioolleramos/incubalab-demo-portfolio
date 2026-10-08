@@ -16,3 +16,16 @@
 .demo-disclaimer strong{color:#164e4a}
 .demo-disclaimer button{padding:0 2px;margin-left:5px;background:none;border:0;color:#00685e;text-decoration:underline;font-weight:750;font-size:inherit;cursor:pointer}
 @media (max-width:740px){.demo-disclaimer{padding:12px 18px}}
+
+/* Expansão independente: módulos de acompanhamento e cadastros fictícios. */
+.sidebar{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#47696b transparent}
+.nav-group{margin-top:19px;margin-bottom:8px}.nav-button{padding:9px 12px;font-size:12px}
+.module-layout{margin-bottom:18px}.module-layout .card{max-width:100%}
+.shortcut-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.shortcut{border:1px solid #e0ecea;border-radius:12px;padding:15px;background:#fbfefd;display:flex;text-align:left;gap:12px;align-items:center;color:#29494e}
+.shortcut:hover{background:#eaf7f2;border-color:#ace0d2}.shortcut-mark{border-radius:9px;background:#e2f5ed;color:#048679;width:33px;height:33px;flex-shrink:0;display:grid;place-items:center}
+.shortcut strong,.shortcut small{display:block}.shortcut strong{font-size:12px}.shortcut small{font-size:10px;color:#8c9fa3;margin-top:4px}
+.activity-card{padding:12px 23px;margin-top:18px}.modal-large{max-width:640px;max-height:90vh;overflow-y:auto}
+.table td strong{font-weight:800;color:#234a4b}
+@media(max-width:850px){.shortcut-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sidebar{max-height:100vh}}
+@media(max-width:490px){.shortcut-grid{grid-template-columns:1fr}.activity-card .event-summary{display:block}}
