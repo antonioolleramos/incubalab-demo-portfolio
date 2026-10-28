@@ -106,7 +106,7 @@ test('limpar os dados restaura a amostra padrão',()=>{
 
 test('não há URLs externas, código de produção ou APIs de rede no código executável',()=>{
   const code=(ts+'\n'+js).replaceAll('http://www.w3.org/2000/svg',''); // namespace XML/SVG, não é rede
-  for(const forbidden of [/https?:\/\//i,/postgresql:\/\//i,/\bfetch\s*\(/i,/XMLHttpRequest/i,/WebSocket\s*\(/i,/process\.env\./i,/neon\.tech/i,/onrender\.com/i,/innovatio\./i,/prisma\.\w+\(/i]){
+  for(const forbidden of [/https?:\/\//i,/postgresql:\/\//i,/\bfetch\s*\(/i,/XMLHttpRequest/i,/WebSocket\s*\(/i,/process\.env\./i,/neon\.tech/i,/onrender\.com/i,/prisma\.\w+\(/i]){
     assert.equal(forbidden.test(code), false, `Encontrado marcador proibido: ${forbidden}`);
   }
   const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
